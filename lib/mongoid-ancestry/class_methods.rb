@@ -132,6 +132,18 @@ module Mongoid
         end
       end
 
+      # Arrangement to nested array
+      def arrange_serializable options={}, nodes=nil, &block
+        nodes = arrange(options) if nodes.nil?
+        nodes.map do |parent, children|
+          if block_given?
+            yield parent, arrange_serializable(options, children, &block)
+          else
+            parent.serializable_hash.merge 'children' => arrange_serializable(options, children)
+          end
+        end
+      end
+
       # Integrity checking
       def check_ancestry_integrity! options = {}
         parents = {}
